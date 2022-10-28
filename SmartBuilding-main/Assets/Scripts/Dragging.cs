@@ -15,7 +15,8 @@ public class Dragging : MonoBehaviour
     private WaitForFixedUpdate waitForFixedUpdate;
     private Vector3 velocity = Vector3.zero;
 
-    public GameObject asset,target;
+    public GameObject asset,targetParent;
+    public GameObject[] targets;
 
     public Collider targetCollider;
 
@@ -46,26 +47,24 @@ public class Dragging : MonoBehaviour
 
     private void Update()
     {
+        targets = GameObject.FindGameObjectsWithTag("Grid");
+         foreach( var target in targets)
+         {
             if(Input.GetMouseButtonUp(0))
             {
-                if(targetCollider != null)
-                {
-                    targetCollider.enabled = true;
                     cmm.IsLock = false;
-                }
-                else
-                {
                     asset.transform.SetParent(null);
-                    cmm.IsLock = false;
-                }
+                    target.GetComponent<Collider>().enabled = true;
             }
+              if(Input.GetMouseButtonDown(0))
+            {
+                    target.GetComponent<Collider>().enabled = false;
+            }
+         }
     }
     private void MousePressed(InputAction.CallbackContext context)
     {
-        if(targetCollider != null)
-        {
-            targetCollider.enabled = false;
-        }
+        asset.transform.SetParent(null);
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit hit;
          if(Physics.Raycast(ray, out hit))
@@ -102,16 +101,17 @@ public class Dragging : MonoBehaviour
 
         void OnTriggerEnter(Collider other)
         {
-                target = other.gameObject;
-                targetCollider = target.GetComponent<Collider>();
-                asset.transform.SetParent(target.transform, true);  
+             foreach( var target in targets)
+         {
+                target.GetComponent<Collider>().enabled = false;
+                targetParent = other.gameObject;
+                asset.transform.SetParent(targetParent.transform, true);  
                  Debug.Log("Parent");
+         }
         }
 
         void OnTriggerExit(Collider other)
        {
-            target = null;
-           targetCollider = null;
            asset.transform.SetParent(null);
         }
 }
